@@ -1,0 +1,262 @@
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #F5F8FE; /* rgb(245, 248, 254) */
+}
+.brand-text {
+    color: #2563eb; /* text-blue-600 */
+}
+.bg-brand-blue {
+    background-color: #0B236B;
+}
+.tooltip {
+    position: relative;
+    display: inline-block;
+    cursor: help;
+}
+.tooltip .tooltiptext {
+    visibility: hidden;
+    width: 250px;
+    background-color: #555;
+    color: #fff;
+    text-align: left;
+    border-radius: 6px;
+    padding: 10px;
+    position: absolute;
+    z-index: 1;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    transition: opacity 0.3s;
+    font-size: 0.875rem;
+    line-height: 1.4;
+    font-weight: 400;
+}
+.tooltip .tooltiptext::after {
+    content: "";
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: #555 transparent transparent transparent;
+}
+.tooltip:hover .tooltiptext {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* Tab Styling */
+.tab-button .tab-heading {
+    background-color: #f3f4f6; /* gray-100 */
+}
+.tab-button .tab-summary {
+    background-color: #F5F8FE; /* rgb(245, 248, 254) */
+}
+
+.tab-active .tab-heading {
+    background-color: #2563eb; /* Active blue background */
+    color: #ffffff;
+}
+.tab-active .tab-heading .text-gray-500 {
+    color: #dbeafe; /* Lighter text for subtitle */
+}
+.tab-active .tab-summary {
+    background-color: #ffffff;
+}
+.tab-active .tab-summary .text-gray-400 {
+    color: #4b5563; /* Darker text for summary */
+}
+
+/* New FAQ Accordion Styles */
+.faq-item {
+    transition: all 0.2s ease-in-out;
+    overflow: hidden; /* To keep rounded corners with the answer */
+    border: 1px solid #e5e7eb; /* gray-200 */
+    border-radius: 0.5rem; /* rounded-lg */
+    background-color: #ffffff; /* bg-white */
+}
+
+.faq-question {
+    transition: background-color 0.2s ease;
+    padding: 1.5rem; /* p-6 */
+    cursor: pointer;
+}
+
+.faq-question span:first-child { /* The text */
+    transition: color 0.2s ease;
+}
+
+.faq-question:hover span:first-child {
+    color: #1d4ed8; /* blue-700 */
+}
+
+/* Styling for the icon */
+.faq-icon {
+    transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+/* Active State Styles */
+.faq-item.active {
+    border-color: #93c5fd; /* blue-300 */
+    background-color: #eff6ff; /* blue-50 */
+}
+
+.faq-item.active .faq-question span:first-child {
+    color: #2563eb; /* blue-600 */
+}
+
+.faq-item.active .faq-icon {
+    transform: rotate(135deg);
+}
+
+.faq-answer {
+    transition: max-height 0.4s ease-in-out;
+    padding: 0 1.5rem; /* px-6 */
+}
+.faq-answer p {
+    padding-bottom: 1.5rem; /* pb-6 */
+}
+
+/* Valuation Graph */
+.graph-bar {
+    transition: width 0.5s ease-in-out;
+}
+
+.metric-item {
+    background-color: #f9fafb; /* gray-50 */
+    padding: 0.75rem;
+    border-radius: 0.5rem;
+    border: 1px solid #e5e7eb; /* gray-200 */
+}
+
+/* Hide number input spinners */
+input[type=number]::-webkit-inner-spin-button, 
+input[type=number]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type=number] {
+  -moz-appearance: textfield;
+}
+
+/* Definitions Section */
+.term-definition {
+    padding-left: 1rem;
+    border-left: 3px solid #93c5fd; /* border-blue-300 */
+}
+.term-definition h4 {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #1f2937; /* text-gray-800 */
+}
+.term-definition p {
+    margin-top: 0.25rem;
+    color: #4b5563; /* text-gray-600 */
+    font-size: 0.9rem;
+}
+.term-definition .example {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: #f9fafb; /* bg-gray-50 */
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    border: 1px solid #f3f4f6; /* border-gray-100 */
+    color: #374151; /* text-gray-700 */
+}
+.term-definition .example strong {
+    color: #111827; /* text-gray-900 */
+}
+.formula {
+    margin-top: 0.75rem;
+    padding: 0.75rem;
+    background-color: #eff6ff; /* bg-blue-50 */
+    border-radius: 0.375rem;
+    font-size: 0.875rem;
+    border: 1px solid #dbeafe; /* border-blue-200 */
+    color: #1e3a8a; /* text-blue-900 */
+    font-family: monospace;
+}
+.formula strong {
+    color: #1e40af; /* text-blue-800 */
+}
+
+/* Download Modal Styles */
+.spinner {
+  width: 48px;
+  height: 48px;
+  border: 5px solid #dbeafe; /* blue-200 */
+  border-bottom-color: #2563eb; /* blue-600 */
+  border-radius: 50%;
+  display: inline-block;
+  box-sizing: border-box;
+  animation: rotation 1s linear infinite;
+}
+
+@keyframes rotation {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+/* PDF Download Specific Styling Adjustments */
+/* This class is temporarily added to the report element during PDF generation */
+.pdf-render-mode {
+    width: 800px !important; /* Force a consistent width for rendering */
+    border: none !important; /* Remove border for cleaner PDF */
+    box-shadow: none !important; /* Remove shadow for cleaner PDF */
+}
+
+.pdf-render-mode h2.text-xl {
+    font-size: 22px !important;
+}
+
+.pdf-render-mode .text-3xl {
+    font-size: 28px !important;
+}
+.pdf-render-mode .text-2xl {
+    font-size: 24px !important;
+}
+.pdf-render-mode .text-lg {
+    font-size: 18px !important;
+}
+
+/* Make key metrics more compact */
+.pdf-render-mode #metrics-basic,
+.pdf-render-mode #metrics-intermediate,
+.pdf-render-mode #metrics-advanced {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem !important; /* reduce space between metric items */
+}
+.pdf-render-mode .metric-item {
+    padding: 0.5rem !important;
+    font-size: 12px !important;
+}
+.pdf-render-mode .metric-item span {
+    font-size: 12px !important;
+}
+
+/* Make input summary more compact */
+.pdf-render-mode .text-xs {
+    font-size: 11px !important;
+    line-height: 1.4 !important;
+}
+.pdf-render-mode #pdf-details-basic,
+.pdf-render-mode #pdf-details-intermediate,
+.pdf-render-mode #pdf-details-advanced {
+    font-size: 11px !important;
+}
+.pdf-render-mode #pdf-details-basic .grid,
+.pdf-render-mode #pdf-details-intermediate .grid,
+.pdf-render-mode #pdf-details-advanced .grid {
+     gap: 0.25rem 1rem !important;
+}
+
+/* Adjust graph text size */
+.pdf-render-mode .text-sm {
+    font-size: 12px !important;
+}

@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Razorpay Business Valuation Calculator</title>
+    <script type="importmap">
+    {
+      "imports": {
+        "@google/genai": "https://esm.sh/@google/genai@^0.7.0",
+        "react/": "https://esm.sh/react@^19.1.1/"
+      }
+    }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="./index.css">
+<link rel="stylesheet" href="/index.css">
+</head>
+<body class="text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-extrabold brand-text">Business Valuation Calculator</h1>
+            <div class="text-center mt-2 text-gray-600">
+                Powered by <a href="https://razorpay.com/" target="_blank" rel="noopener noreferrer" class="font-semibold brand-text">Razorpay</a>
+            </div>
+            <p class="text-gray-500 mt-3 max-w-2xl mx-auto">Estimate the value of your business. Select the phase that best matches your company's size and maturity.</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="mb-8">
+            <div class="flex border-b border-gray-200">
+                <button id="tab-basic" class="flex-1 text-center font-semibold text-gray-600 transition-colors duration-300 tab-button tab-active">
+                    <div class="tab-wrapper rounded-t-lg overflow-hidden">
+                        <div class="tab-heading p-2 transition-colors duration-300">
+                            <span class="block text-lg">Basic</span>
+                            <span class="block text-xs text-gray-500">For Small Businesses</span>
+                        </div>
+                        <div class="tab-summary p-2 transition-colors duration-300">
+                             <span class="block text-xs text-gray-400 mt-1 italic">A quick estimate using a simple multiple on your total owner earnings.</span>
+                        </div>
+                    </div>
+                </button>
+                <button id="tab-intermediate" class="flex-1 text-center font-semibold text-gray-600 transition-colors duration-300 tab-button">
+                     <div class="tab-wrapper rounded-t-lg overflow-hidden">
+                        <div class="tab-heading p-2 transition-colors duration-300">
+                            <span class="block text-lg">Intermediate</span>
+                            <span class="block text-xs text-gray-500">For Growing Businesses</span>
+                        </div>
+                        <div class="tab-summary p-2 transition-colors duration-300">
+                            <span class="block text-xs text-gray-400 mt-1 italic">An investor-focused valuation using your operational profit adjusted for risks.</span>
+                        </div>
+                    </div>
+                </button>
+                <button id="tab-advanced" class="flex-1 text-center font-semibold text-gray-600 transition-colors duration-300 tab-button">
+                     <div class="tab-wrapper rounded-t-lg overflow-hidden">
+                        <div class="tab-heading p-2 transition-colors duration-300">
+                            <span class="block text-lg">Advanced</span>
+                            <span class="block text-xs text-gray-500">For Established Enterprises</span>
+                        </div>
+                        <div class="tab-summary p-2 transition-colors duration-300">
+                           <span class="block text-xs text-gray-400 mt-1 italic">A forward-looking valuation based on the present value of future cash flows.</span>
+                        </div>
+                    </div>
+                </button>
+            </div>
+        </div>
+
+        <div class="flex flex-col lg:flex-row gap-8">
+            <!-- Left Column: Calculator Forms -->
+            <div class="lg:w-2/3">
+                <div id="calculator-forms">
+                    <!-- Basic Calculator Form -->
+                    <div id="form-basic" class="space-y-6 bg-white p-6 md:p-8 rounded-xl shadow-md border border-gray-200">
+                        <h2 class="text-2xl font-bold brand-text border-b pb-3">Basic Valuation (SDE Multiple)</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="basic-industry" class="block text-sm font-medium text-gray-700">Industry</label>
+                                <select id="basic-industry" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                                    <option value="automotive">Automotive Sales & Service</option>
+                                    <option value="business-services">Business Services (Consulting, BPO)</option>
+                                    <option value="construction">Construction</option>
+                                    <option value="consumer-goods">Consumer Goods</option>
+                                    <option value="e-commerce">E-Commerce & D2C</option>
+                                    <option value="education">Education & Training</option>
+                                    <option value="financial-services">Financial Services</option>
+                                    <option value="food-beverage">Food & Beverage</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="hospitality">Hospitality & Tourism</option>
+                                    <option value="logistics">Logistics & Transportation</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="media">Media & Entertainment</option>
+                                    <option value="real-estate">Real Estate & Property</option>
+                                    <option value="restaurants">Restaurants & Bars</option>
+                                    <option value="retail">Retail (General)</option>
+                                    <option value="saas" selected>SaaS</option>
+                                    <option value="software">Software & IT Services</option>
+                                    <option value="tech-hardware">Technology Hardware</option>
+                                    <option value="telecom">Telecommunications</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="basic-revenue" class="block text-sm font-medium text-gray-700">Total Annual Revenue</label>
+                                <input type="number" id="basic-revenue" placeholder="e.g., 5000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="basic-cogs" class="flex items-center text-sm font-medium text-gray-700">
+                                    Cost of Goods Sold (COGS)
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">The direct costs of producing the goods sold by a company. This includes materials and direct labor.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="basic-cogs" placeholder="e.g., 2000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                            <div>
+                                <label for="basic-opex" class="flex items-center text-sm font-medium text-gray-700">
+                                    Total Operating Expenses
+                                     <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">Operating Expenses are the costs a business incurs for its normal business activities, not directly related to production (e.g., rent, marketing, payroll).</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="basic-opex" placeholder="e.g., 1500000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t">
+                             <h3 class="text-lg font-semibold brand-text flex items-center">
+                                Profit Normalization (Add-Backs)
+                                <span class="ml-2 tooltip">
+                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                    <span class="tooltiptext">These are expenses that will not continue under a new owner. Adding them back shows the true earning potential of the business.</span>
+                                </span>
+                            </h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div>
+                                    <label for="basic-owner-salary" class="flex items-center text-sm font-medium text-gray-700">
+                                        One Owner's Annual Salary
+                                        <span class="ml-1.5 tooltip">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            <span class="tooltiptext">The salary paid to one full-time owner. This is 'added back' to profit because a new owner would set their own salary.</span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="basic-owner-salary" placeholder="e.g., 1200000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="basic-interest" class="flex items-center text-sm font-medium text-gray-700">
+                                        Annual Interest Expense
+                                        <span class="ml-1.5 tooltip">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            <span class="tooltiptext">Interest paid on business debt. This is an expense related to financing, not operations, so it's added back.</span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="basic-interest" placeholder="e.g., 50000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="basic-depreciation" class="flex items-center text-sm font-medium text-gray-700">
+                                        Depreciation & Amortization
+                                        <span class="ml-1.5 tooltip">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            <span class="tooltiptext">Depreciation & Amortization are non-cash expenses that reduce taxable income. They are added back to reflect true cash flow.</span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="basic-depreciation" placeholder="e.g., 200000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                                <div>
+                                    <label for="basic-one-time-expenses" class="flex items-center text-sm font-medium text-gray-700">
+                                        One-Time Expenses
+                                        <span class="ml-1.5 tooltip">
+                                            <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                            <span class="tooltiptext">Unusual, non-recurring expenses that are not expected to happen again (e.g., a lawsuit settlement). These are added back.</span>
+                                        </span>
+                                    </label>
+                                    <input type="number" id="basic-one-time-expenses" placeholder="e.g., 0" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="pt-4 border-t">
+                            <h3 class="text-lg font-semibold brand-text">Qualitative Factors</h3>
+                            <div>
+                                <label for="basic-revenue-trend" class="block text-sm font-medium text-gray-700 mt-4">Revenue Trend (Last 3 Years)</label>
+                                <select id="basic-revenue-trend" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="-0.25">Declining</option>
+                                    <option value="0" selected>Stable</option>
+                                    <option value="0.25">Growing</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Intermediate Calculator Form -->
+                    <div id="form-intermediate" class="hidden space-y-6 bg-white p-8 rounded-xl shadow-md border border-gray-200">
+                        <h2 class="text-2xl font-bold brand-text border-b pb-3">Intermediate Valuation (EBITDA Multiple)</h2>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                             <div>
+                                <label for="int-industry" class="block text-sm font-medium text-gray-700">Industry</label>
+                                <select id="int-industry" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="automotive">Automotive Sales & Service</option>
+                                    <option value="business-services">Business Services (Consulting, BPO)</option>
+                                    <option value="construction">Construction</option>
+                                    <option value="consumer-goods">Consumer Goods</option>
+                                    <option value="e-commerce">E-Commerce & D2C</option>
+                                    <option value="education">Education & Training</option>
+                                    <option value="financial-services">Financial Services</option>
+                                    <option value="food-beverage">Food & Beverage</option>
+                                    <option value="healthcare">Healthcare</option>
+                                    <option value="hospitality">Hospitality & Tourism</option>
+                                    <option value="logistics">Logistics & Transportation</option>
+                                    <option value="manufacturing">Manufacturing</option>
+                                    <option value="media">Media & Entertainment</option>
+                                    <option value="real-estate">Real Estate & Property</option>
+                                    <option value="restaurants">Restaurants & Bars</option>
+                                    <option value="retail">Retail (General)</option>
+                                    <option value="saas" selected>SaaS</option>
+                                    <option value="software">Software & IT Services</option>
+                                    <option value="tech-hardware">Technology Hardware</option>
+                                    <option value="telecom">Telecommunications</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="int-ebitda" class="flex items-center text-sm font-medium text-gray-700">
+                                    Most Recent Annual EBITDA
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">Earnings Before Interest, Taxes, Depreciation, and Amortization. A measure of a company's overall financial performance.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="int-ebitda" placeholder="e.g., 2500000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="int-debt" class="flex items-center text-sm font-medium text-gray-700">
+                                    Total Business Debt
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">All outstanding financial obligations of the business, such as loans and lines of credit.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="int-debt" placeholder="e.g., 1000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="int-cash" class="flex items-center text-sm font-medium text-gray-700">
+                                    Cash & Cash Equivalents
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">Cash on hand and other liquid assets that can be readily converted to cash.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="int-cash" placeholder="e.g., 500000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                        </div>
+                         <div class="pt-4 border-t">
+                            <h3 class="text-lg font-semibold brand-text">Growth & Risk Profile</h3>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-4">
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Key Business Strengths</label>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 int-factor" value="0.25"> <span class="ml-2 text-sm text-gray-600">Strong Growth History</span></label>
+                                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 int-factor" value="0.20"> <span class="ml-2 text-sm text-gray-600">Recurring Revenue</span></label>
+                                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 int-factor" value="0.15"> <span class="ml-2 text-sm text-gray-600">Strong Client Base</span></label>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label class="block text-sm font-medium text-gray-700 mb-2">Key Business Risks</label>
+                                    <div class="space-y-2">
+                                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 int-factor" value="-0.25"> <span class="ml-2 text-sm text-gray-600">Owner Dependence</span></label>
+                                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 int-factor" value="-0.20">
+                                            <span class="ml-2 text-sm text-gray-600 flex items-center">
+                                                High Customer Concentration
+                                                <span class="ml-1.5 tooltip">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                                    <span class="tooltiptext">A high percentage of revenue comes from a small number of customers, which increases risk.</span>
+                                                </span>
+                                            </span>
+                                        </label>
+                                        <label class="flex items-center"><input type="checkbox" class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 int-factor" value="-0.15"> <span class="ml-2 text-sm text-gray-600">Declining Industry</span></label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Advanced Calculator Form -->
+                    <div id="form-advanced" class="hidden space-y-6 bg-white p-8 rounded-xl shadow-md border border-gray-200">
+                        <h2 class="text-2xl font-bold brand-text border-b pb-3">Advanced Valuation (DCF)</h2>
+                        <p class="text-sm text-gray-600">This method projects future cash flows and discounts them to their present value. Enter your projections and assumptions below, then click "Calculate" to see the valuation on the right.</p>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <h3 class="md:col-span-2 text-lg font-semibold brand-text border-b pb-2">Financials</h3>
+                            <div>
+                                <label for="adv-revenue" class="block text-sm font-medium text-gray-700">Most Recent Annual Revenue</label>
+                                <input type="number" id="adv-revenue" placeholder="e.g., 10000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="adv-cogs" class="flex items-center text-sm font-medium text-gray-700">
+                                    Cost of Goods Sold (COGS)
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                        <span class="tooltiptext">The direct costs of producing the goods sold by a company. This includes materials and direct labor.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-cogs" placeholder="e.g., 4000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="adv-opex" class="flex items-center text-sm font-medium text-gray-700">
+                                    Total Operating Expenses
+                                     <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                        <span class="tooltiptext">Operating Expenses are the costs a business incurs for its normal business activities, not directly related to production (e.g., rent, marketing, payroll).</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-opex" placeholder="e.g., 3000000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="adv-tax-rate" class="block text-sm font-medium text-gray-700">Corporate Tax Rate (%)</label>
+                                <input type="number" id="adv-tax-rate" value="25" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                             <div>
+                                <label for="adv-debt" class="block text-sm font-medium text-gray-700">Total Outstanding Debt</label>
+                                <input type="number" id="adv-debt" placeholder="e.g., 1500000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="adv-cash" class="flex items-center text-sm font-medium text-gray-700">
+                                    Cash & Cash Equivalents
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                        <span class="tooltiptext">Cash on hand and other liquid assets. This is added to the valuation after subtracting debt.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-cash" placeholder="e.g., 500000" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+
+                             <h3 class="md:col-span-2 text-lg font-semibold brand-text border-b pb-2 pt-4">Projections & Assumptions</h3>
+                            <div>
+                                <label for="adv-growth-rate-1" class="block text-sm font-medium text-gray-700">Annual Growth Rate (Years 1-2) (%)</label>
+                                <input type="number" id="adv-growth-rate-1" placeholder="e.g., 15" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="adv-growth-rate-2" class="block text-sm font-medium text-gray-700">Annual Growth Rate (Years 3-5) (%)</label>
+                                <input type="number" id="adv-growth-rate-2" placeholder="e.g., 10" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                           
+                            <div>
+                                <label for="adv-capex" class="flex items-center text-sm font-medium text-gray-700">
+                                    Capital Expenditures (% of Revenue)
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">Capital Expenditures are funds used by a company to acquire, upgrade, and maintain physical assets like property, buildings, or equipment.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-capex" placeholder="e.g., 5" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            <div>
+                                <label for="adv-da" class="flex items-center text-sm font-medium text-gray-700">
+                                    Depreciation & Amortization (% of Revenue)
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd"></path></svg>
+                                        <span class="tooltiptext">A non-cash expense that reduces taxable income. It must be added back to profit to calculate true cash flow.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-da" placeholder="e.g., 4" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                             <div>
+                                <label for="adv-nwc" class="flex items-center text-sm font-medium text-gray-700">
+                                    Net Working Capital (% of Revenue)
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">The investment in short-term assets (like inventory and receivables) needed to support business growth. We calculate the annual change.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-nwc" placeholder="e.g., 3" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                            
+                            <div>
+                                <label for="adv-risk" class="flex items-center text-sm font-medium text-gray-700">
+                                    Discount Rate (WACC)
+                                     <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">Weighted Average Cost of Capital. The average rate of return a company is expected to provide to its investors. It's used as the discount rate for future cash flows.</span>
+                                    </span>
+                                </label>
+                                <select id="adv-risk" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                                    <option value="0.12">Low Risk (12%)</option>
+                                    <option value="0.15" selected>Medium Risk (15%)</option>
+                                    <option value="0.20">High Risk (20%)</option>
+                                    <option value="0.25">Venture Risk (25%)</option>
+                                </select>
+                            </div>
+                            <div>
+                                <label for="adv-terminal-growth" class="flex items-center text-sm font-medium text-gray-700">
+                                    Perpetual Growth Rate (%)
+                                    <span class="ml-1.5 tooltip">
+                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-gray-400" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clip-rule="evenodd" /></svg>
+                                        <span class="tooltiptext">The assumed constant rate at which the company's free cash flow is expected to grow indefinitely after the initial projection period.</span>
+                                    </span>
+                                </label>
+                                <input type="number" id="adv-terminal-growth" value="2.5" class="mt-1 block w-full p-2 border border-gray-300 rounded-md shadow-sm">
+                            </div>
+                        </div>
+                        <div class="pt-6 text-center">
+                            <button id="dcf-calculate-button" class="bg-blue-600 text-white font-bold py-3 px-8 rounded-lg hover:bg-blue-700 transition-colors duration-300">Calculate DCF Valuation</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column: Live Calculation Preview -->
+            <div class="lg:w-1/3">
+                <div class="sticky top-8">
+                    <!-- Basic Preview -->
+                    <div id="preview-basic" class="bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                        <div id="valuation-report-basic">
+                            <div class="text-center border-b pb-4">
+                                <h2 class="text-xl font-bold text-gray-800">Valuation Report</h2>
+                                <p class="text-xs text-gray-500">Basic Valuation (SDE Multiple)</p>
+                            </div>
+                            <div class="text-center my-6">
+                                <p class="text-sm text-gray-500 uppercase tracking-wider">Estimated Business Value</p>
+                                <div id="preview-basic-valuation" class="mt-2 text-3xl font-extrabold text-blue-600">₹0</div>
+                            </div>
+                            <div class="my-8">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">Valuation Range Visualized</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="font-medium text-gray-600">Lower Bound</span>
+                                            <span id="graph-basic-lower-value" class="font-bold text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="w-full bg-blue-100 rounded-full h-2.5"><div id="graph-basic-lower-bar" class="bg-blue-400 h-2.5 rounded-full graph-bar" style="width: 0%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="font-medium text-gray-600">Upper Bound</span>
+                                            <span id="graph-basic-upper-value" class="font-bold text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="w-full bg-blue-100 rounded-full h-2.5"><div id="graph-basic-upper-bar" class="bg-blue-600 h-2.5 rounded-full graph-bar" style="width: 0%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-8 border-t pt-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Key Metrics</h3>
+                                <div id="metrics-basic" class="grid grid-cols-2 gap-4 text-sm"></div>
+                            </div>
+                             <!-- Details for PDF -->
+                            <div id="pdf-details-basic" class="hidden mt-6 border-t pt-4 text-xs text-gray-600">
+                                <h4 class="font-bold text-sm text-gray-800 mb-2">Summary of Inputs</h4>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    <div class="font-semibold">Industry:</div><div id="pdf-basic-input-industry"></div>
+                                    <div class="font-semibold">Annual Revenue:</div><div id="pdf-basic-input-revenue"></div>
+                                    <div class="font-semibold">COGS:</div><div id="pdf-basic-input-cogs"></div>
+                                    <div class="font-semibold">Operating Expenses:</div><div id="pdf-basic-input-opex"></div>
+                                    <div class="font-semibold">Owner Salary:</div><div id="pdf-basic-input-owner-salary"></div>
+                                    <div class="font-semibold">Interest Expense:</div><div id="pdf-basic-input-interest"></div>
+                                    <div class="font-semibold">Depreciation:</div><div id="pdf-basic-input-depreciation"></div>
+                                    <div class="font-semibold">One-Time Expenses:</div><div id="pdf-basic-input-one-time-expenses"></div>
+                                    <div class="font-semibold">Revenue Trend:</div><div id="pdf-basic-input-revenue-trend"></div>
+                                </div>
+                            </div>
+                            <div id="pdf-footer-basic" class="hidden mt-6 border-t pt-2 text-center text-xs text-gray-500">
+                                <p>Report generated on <span id="pdf-date-basic"></span> by Razorpay Business Valuation Calculator.</p>
+                                <p>This report is an estimate for informational purposes only and is not a formal valuation.</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 text-center">
+                            <button id="download-pdf-basic" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 w-full flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                <span>Download Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Intermediate Preview -->
+                    <div id="preview-intermediate" class="hidden bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                         <div id="valuation-report-intermediate">
+                            <div class="text-center border-b pb-4">
+                                <h2 class="text-xl font-bold text-gray-800">Valuation Report</h2>
+                                <p class="text-xs text-gray-500">Intermediate Valuation (EBITDA Multiple)</p>
+                            </div>
+                            <div class="text-center my-6">
+                                <p class="text-sm text-gray-500 uppercase tracking-wider">Estimated Equity Value</p>
+                                <div id="preview-int-valuation" class="mt-2 text-3xl font-extrabold text-blue-600">₹0</div>
+                            </div>
+                            <div class="my-8">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">Valuation Range Visualized</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="font-medium text-gray-600">Lower Bound</span>
+                                            <span id="graph-int-lower-value" class="font-bold text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="w-full bg-blue-100 rounded-full h-2.5"><div id="graph-int-lower-bar" class="bg-blue-400 h-2.5 rounded-full graph-bar" style="width: 0%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="font-medium text-gray-600">Upper Bound</span>
+                                            <span id="graph-int-upper-value" class="font-bold text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="w-full bg-blue-100 rounded-full h-2.5"><div id="graph-int-upper-bar" class="bg-blue-600 h-2.5 rounded-full graph-bar" style="width: 0%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-8 border-t pt-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Key Metrics</h3>
+                                <div id="metrics-intermediate" class="grid grid-cols-2 gap-4 text-sm"></div>
+                            </div>
+                             <!-- Details for PDF -->
+                            <div id="pdf-details-intermediate" class="hidden mt-6 border-t pt-4 text-xs text-gray-600">
+                                <h4 class="font-bold text-sm text-gray-800 mb-2">Summary of Inputs</h4>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    <div class="font-semibold">Industry:</div><div id="pdf-int-input-industry"></div>
+                                    <div class="font-semibold">Annual EBITDA:</div><div id="pdf-int-input-ebitda"></div>
+                                    <div class="font-semibold">Total Debt:</div><div id="pdf-int-input-debt"></div>
+                                    <div class="font-semibold">Total Cash:</div><div id="pdf-int-input-cash"></div>
+                                    <div class="font-semibold col-span-2 mt-1">Qualitative Factors Selected:</div>
+                                    <div id="pdf-int-input-factors" class="col-span-2"></div>
+                                </div>
+                            </div>
+                             <div id="pdf-footer-intermediate" class="hidden mt-6 border-t pt-2 text-center text-xs text-gray-500">
+                                <p>Report generated on <span id="pdf-date-intermediate"></span> by Razorpay Business Valuation Calculator.</p>
+                                <p>This report is an estimate for informational purposes only and is not a formal valuation.</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 text-center">
+                            <button id="download-pdf-intermediate" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 w-full flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                <span>Download Report</span>
+                            </button>
+                        </div>
+                    </div>
+                    <!-- Advanced Preview -->
+                    <div id="preview-advanced" class="hidden bg-white p-6 rounded-xl shadow-lg border border-gray-200">
+                         <div id="valuation-report-advanced">
+                            <div class="text-center border-b pb-4">
+                                <h2 class="text-xl font-bold text-gray-800">Valuation Report</h2>
+                                <p class="text-xs text-gray-500">Advanced Valuation (Discounted Cash Flow)</p>
+                            </div>
+                            <div class="text-center my-6">
+                                <p class="text-sm text-gray-500 uppercase tracking-wider">Estimated Equity Value (DCF)</p>
+                                <div id="preview-adv-valuation" class="mt-2 text-3xl font-extrabold text-blue-600">₹0</div>
+                            </div>
+                            <div class="my-8">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4 text-center">Valuation Range Visualized</h3>
+                                <div class="space-y-3">
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="font-medium text-gray-600">Lower Bound</span>
+                                            <span id="graph-adv-lower-value" class="font-bold text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="w-full bg-blue-100 rounded-full h-2.5"><div id="graph-adv-lower-bar" class="bg-blue-400 h-2.5 rounded-full graph-bar" style="width: 0%"></div></div>
+                                    </div>
+                                    <div>
+                                        <div class="flex justify-between text-sm mb-1">
+                                            <span class="font-medium text-gray-600">Upper Bound</span>
+                                            <span id="graph-adv-upper-value" class="font-bold text-gray-800">₹0</span>
+                                        </div>
+                                        <div class="w-full bg-blue-100 rounded-full h-2.5"><div id="graph-adv-upper-bar" class="bg-blue-600 h-2.5 rounded-full graph-bar" style="width: 0%"></div></div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mt-8 border-t pt-6">
+                                <h3 class="text-lg font-semibold text-gray-700 mb-4">Key Metrics</h3>
+                                <div id="metrics-advanced" class="grid grid-cols-2 gap-4 text-sm">
+                                    <p class="col-span-2 text-center text-gray-500 italic">Enter your data and click "Calculate" to see key metrics.</p>
+                                </div>
+                            </div>
+                             <!-- Details for PDF -->
+                            <div id="pdf-details-advanced" class="hidden mt-6 border-t pt-4 text-xs text-gray-600">
+                                <h4 class="font-bold text-sm text-gray-800 mb-2">Summary of Inputs & Assumptions</h4>
+                                <div class="grid grid-cols-2 gap-x-4 gap-y-1">
+                                    <div class="font-semibold">Annual Revenue:</div><div id="pdf-adv-input-revenue"></div>
+                                    <div class="font-semibold">COGS:</div><div id="pdf-adv-input-cogs"></div>
+                                    <div class="font-semibold">Operating Expenses:</div><div id="pdf-adv-input-opex"></div>
+                                    <div class="font-semibold">Corporate Tax Rate:</div><div id="pdf-adv-input-tax-rate"></div>
+                                    <div class="font-semibold">Total Debt:</div><div id="pdf-adv-input-debt"></div>
+                                    <div class="font-semibold">Total Cash:</div><div id="pdf-adv-input-cash"></div>
+                                    <div class="font-semibold">Growth (Y1-2):</div><div id="pdf-adv-input-g1"></div>
+                                    <div class="font-semibold">Growth (Y3-5):</div><div id="pdf-adv-input-g2"></div>
+                                    <div class="font-semibold">CapEx (% Rev):</div><div id="pdf-adv-input-capex"></div>
+                                    <div class="font-semibold">D&A (% Rev):</div><div id="pdf-adv-input-da"></div>
+                                    <div class="font-semibold">NWC (% Rev):</div><div id="pdf-adv-input-nwc"></div>
+                                    <div class="font-semibold">Discount Rate:</div><div id="pdf-adv-input-wacc"></div>
+                                    <div class="font-semibold">Perpetual Growth:</div><div id="pdf-adv-input-terminal"></div>
+                                </div>
+                            </div>
+                             <div id="pdf-footer-advanced" class="hidden mt-6 border-t pt-2 text-center text-xs text-gray-500">
+                                <p>Report generated on <span id="pdf-date-advanced"></span> by Razorpay Business Valuation Calculator.</p>
+                                <p>This report is an estimate for informational purposes only and is not a formal valuation.</p>
+                            </div>
+                        </div>
+                        <div class="mt-8 text-center">
+                           <button id="download-pdf-advanced" class="bg-blue-600 text-white font-bold py-3 px-6 rounded-lg hover:bg-blue-700 transition-colors duration-300 w-full flex items-center justify-center gap-2">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zm3.293-7.707a1 1 0 011.414 0L9 10.586V3a1 1 0 112 0v7.586l1.293-1.293a1 1 0 111.414 1.414l-3 3a1 1 0 01-1.414 0l-3-3a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
+                                <span>Download Report</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Informational Content Below Calculator -->
+        <div class="mt-12 space-y-8">
+            <!-- Guidance Section -->
+            <div id="guidance-section">
+                 <div id="guide-basic" class="bg-blue-50 border border-blue-200 text-blue-800 p-6 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2">How Basic Valuation Works</h3>
+                    <p class="text-sm">This is a straightforward method ideal for small, owner-operated businesses. We calculate your Seller's Discretionary Earnings (SDE)—your total profit plus your salary and other one-time or non-operational expenses. This SDE is then multiplied by an industry-standard number to estimate your business's value.</p>
+                    <div class="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-md">
+                        <h4 class="font-semibold text-blue-900">Example Calculation:</h4>
+                        <p class="text-sm mt-2 text-blue-800">
+                            First, we find your Pre-Tax Profit: <br>
+                            <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹50L Revenue - ₹20L COGS - ₹15L OPEX = ₹15L Profit</code>
+                        </p>
+                        <p class="text-sm mt-2 text-blue-800">
+                            Then, we calculate SDE by adding back non-operational or discretionary costs: <br>
+                            <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹15L Profit + ₹12L Owner Salary + ₹2L Depreciation = ₹29L SDE</code>
+                        </p>
+                        <p class="text-sm mt-2 text-blue-800">
+                            Finally, we apply the industry multiple: <br>
+                            <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹29L SDE * 3.5x Multiple = ~₹1.01 Cr Valuation</code>
+                        </p>
+                    </div>
+                </div>
+                 <div id="guide-intermediate" class="hidden bg-blue-50 border border-blue-200 text-blue-800 p-6 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2">How Intermediate Valuation Works</h3>
+                    <p class="text-sm">This method is common for larger businesses and is often used by investors. It uses EBITDA (Earnings Before Interest, Taxes, Depreciation, and Amortization) as the earnings metric. We multiply your EBITDA by a baseline industry multiple, which is then adjusted based on your company's specific strengths and weaknesses to arrive at an Enterprise Value. We then adjust for debt and cash to find the final Equity Value.</p>
+                    <div class="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-md">
+                        <h4 class="font-semibold text-blue-900">Example Calculation:</h4>
+                        <p class="text-sm mt-2 text-blue-800">
+                            First, we calculate the Enterprise Value: <br>
+                            <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹25L EBITDA * 5.5x Adj. Multiple = ₹1.375 Cr Enterprise Value</code>
+                        </p>
+                        <p class="text-sm mt-2 text-blue-800">
+                            Then, we adjust for debt and cash to find the Equity Value (what the business is worth to shareholders): <br>
+                            <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹1.375 Cr EV - ₹10L Debt + ₹5L Cash = ₹1.325 Cr Equity Value</code>
+                        </p>
+                    </div>
+                </div>
+                 <div id="guide-advanced" class="hidden bg-blue-50 border border-blue-200 text-blue-800 p-6 rounded-lg">
+                    <h3 class="font-bold text-lg mb-2">How Advanced Valuation Works</h3>
+                    <p class="text-sm">The Discounted Cash Flow (DCF) method is the most detailed, valuing a company based on its projected future cash flows. We forecast the company's free cash flow over the next 5 years, estimate a "terminal value" for all cash flows beyond that, and then discount all those future cash flows back to today's value using a discount rate that reflects the business's risk.</p>
+                    <div class="mt-4 p-4 bg-blue-100 border border-blue-300 rounded-md">
+                        <h4 class="font-semibold text-blue-900">Example Free Cash Flow (FCF) Calculation (for one year):</h4>
+                        <p class="text-sm mt-2 text-blue-800 space-y-1">
+                            <span>1. <strong>Calculate Profit (EBIT):</strong> <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹1 Cr Revenue - ₹70L Costs = ₹30L EBIT</code></span><br>
+                            <span>2. <strong>Calculate NOPAT (Net Operating Profit After Tax):</strong> <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹30L EBIT * (1 - 25% Tax) = ₹22.5L NOPAT</code></span><br>
+                            <span>3. <strong>Calculate Free Cash Flow:</strong> <code class="text-sm font-mono bg-blue-200 p-1 rounded">₹22.5L NOPAT + ₹4L D&A - ₹5L CapEx - ₹3L ΔNWC = ₹18.5L FCF</code></span>
+                        </p>
+                        <p class="text-sm mt-2 text-blue-800">
+                            This FCF is calculated for each of the next 5 years. Each year's FCF is then "discounted" to find its value in today's money. The sum of these discounted cash flows gives the final valuation.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Key Terms & Definitions Section -->
+            <section id="key-terms" class="p-6 bg-white rounded-xl shadow-md border border-gray-200">
+                <h2 class="text-2xl font-bold brand-text border-b pb-3 mb-4">What is Business Valuation?</h2>
+                <p class="text-gray-600 mb-6">Business valuation is the process of determining the economic worth of a company. It's a critical exercise for owners, investors, and stakeholders, providing a quantifiable measure of a business's value for mergers, acquisitions, sales, fundraising, or strategic planning. The method used often depends on the company's size, industry, and maturity.</p>
+
+                <div id="definitions-basic">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 border-t pt-4">Key Terms for Basic Valuation</h3>
+                    <div class="space-y-5">
+                        <div class="term-definition">
+                            <h4>Seller's Discretionary Earnings (SDE)</h4>
+                            <p>The total financial benefit a single full-time owner-operator derives from the business. It's calculated by taking pre-tax profit and adding back the owner's salary, non-cash expenses (like depreciation), and any one-time or personal expenses run through the company.</p>
+                            <p class="example"><strong>Example:</strong> If a business has a ₹10,00,000 pre-tax profit, the owner draws a ₹12,00,000 salary, and there's ₹2,00,000 in depreciation, the SDE would be ₹24,00,000.</p>
+                            <p class="formula"><strong>Formula:</strong> Pre-Tax Profit + Owner's Salary + Depreciation = ₹10,00,000 + ₹12,00,000 + ₹2,00,000 = <strong>₹24,00,000</strong></p>
+                        </div>
+                        <div class="term-definition">
+                            <h4>Cost of Goods Sold (COGS)</h4>
+                            <p>The direct costs attributable to the production of the goods or services sold by a company. This includes material costs and direct labor costs.</p>
+                            <p class="example"><strong>Example:</strong> For a coffee shop, COGS would include the cost of coffee beans, milk, sugar, and paper cups.</p>
+                        </div>
+                         <div class="term-definition">
+                            <h4>Operating Expenses (OPEX)</h4>
+                            <p>The expenses a business incurs through its normal business operations. These costs are not directly related to production and include things like rent, marketing, utilities, and administrative salaries.</p>
+                            <p class="example"><strong>Example:</strong> Monthly rent for an office, marketing campaign costs, and salaries for the sales team are all part of OPEX.</p>
+                        </div>
+                    </div>
+                </div>
+                <div id="definitions-intermediate" class="hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 border-t pt-4">Key Terms for Intermediate Valuation</h3>
+                     <div class="space-y-5">
+                        <div class="term-definition">
+                            <h4>EBITDA</h4>
+                            <p>Stands for Earnings Before Interest, Taxes, Depreciation, and Amortization. It's a measure of a company's overall financial performance and is used as an alternative to net income in some circumstances.</p>
+                            <p class="example"><strong>Example:</strong> A company with ₹50,00,000 in revenue, ₹20,00,000 in operating expenses, and ₹5,00,000 in depreciation would have an EBITDA of ₹30,00,000 (before considering interest and taxes).</p>
+                        </div>
+                        <div class="term-definition">
+                            <h4>Enterprise Value (EV)</h4>
+                            <p>A measure of a company's total value, often used as a more comprehensive alternative to equity market capitalization. EV is calculated as market capitalization plus debt, minus cash and cash equivalents.</p>
+                            <p class="example"><strong>Example:</strong> If a company's equity is valued at ₹2 Cr, it has ₹50L in debt and ₹20L in cash, its Enterprise Value is ₹2.3 Cr.</p>
+                            <p class="formula"><strong>Formula:</strong> Equity Value + Debt - Cash = ₹2,00,00,000 + ₹50,00,000 - ₹20,00,000 = <strong>₹2,30,00,000</strong></p>
+                        </div>
+                         <div class="term-definition">
+                            <h4>Equity Value</h4>
+                            <p>The value of the company's shares and any other ownership interests. It represents the value remaining for shareholders after all debts and obligations have been paid.</p>
+                            <p class="example"><strong>Example:</strong> From the example above, if the Enterprise Value is ₹2.3 Cr, and you subtract debt (₹50L) and add back cash (₹20L), the Equity Value is ₹2 Cr.</p>
+                            <p class="formula"><strong>Formula:</strong> Enterprise Value - Debt + Cash = ₹2,30,00,000 - ₹50,00,000 + ₹20,00,000 = <strong>₹2,00,00,000</strong></p>
+                        </div>
+                    </div>
+                </div>
+                <div id="definitions-advanced" class="hidden">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4 border-t pt-4">Key Terms for Advanced Valuation</h3>
+                    <div class="space-y-5">
+                        <div class="term-definition">
+                            <h4>Discounted Cash Flow (DCF)</h4>
+                            <p>A valuation method used to estimate the value of an investment based on its expected future cash flows. DCF analysis attempts to figure out the value of a company today, based on projections of how much money it will generate in the future.</p>
+                        </div>
+                        <div class="term-definition">
+                            <h4>Free Cash Flow (FCF)</h4>
+                            <p>The cash a company produces through its operations after subtracting for capital expenditures (CapEx). It's the cash left over after a company pays for its operating expenses and investments in assets.</p>
+                            <p class="example"><strong>Example:</strong> If a company has ₹1 Cr in cash from operations and invests ₹20L in new equipment (CapEx), its Free Cash Flow is ₹80L.</p>
+                            <p class="formula"><strong>Formula:</strong> Cash from Operations - Capital Expenditures = ₹1,00,00,000 - ₹20,00,000 = <strong>₹80,00,000</strong></p>
+                        </div>
+                         <div class="term-definition">
+                            <h4>Weighted Average Cost of Capital (WACC)</h4>
+                            <p>A calculation of a firm's cost of capital in which each category of capital is proportionately weighted. It represents the blended cost of capital across all sources, including equity and debt.</p>
+                            <p class="example"><strong>Example:</strong> A high WACC (e.g., 20%) implies a higher risk and therefore a lower valuation, as future cash flows are discounted at a higher rate.</p>
+                        </div>
+                        <div class="term-definition">
+                            <h4>Terminal Value</h4>
+                            <p>The estimated value of a business for all the years beyond the explicit forecast period (usually 5 years). It assumes the business will grow at a set, stable rate forever.</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+
+        <!-- FAQ Section -->
+        <section id="faq" class="mt-16 max-w-4xl mx-auto">
+            <h2 class="text-3xl font-bold text-center mb-8 brand-text">Frequently Asked Questions</h2>
+            <div class="space-y-4">
+                <div class="faq-item">
+                    <button class="faq-question w-full flex justify-between items-center text-left" aria-expanded="false">
+                        <span class="text-lg font-semibold text-gray-800">How accurate is this calculator?</span>
+                        <span class="faq-icon-wrapper flex-shrink-0 ml-4">
+                             <svg class="faq-icon h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-answer overflow-hidden max-h-0">
+                        <p class="text-gray-600">This calculator provides a data-driven, estimated valuation based on industry-standard methodologies and market data. It is an excellent starting point for strategic planning. However, it is not a substitute for a formal valuation conducted by a certified professional, which would involve a much deeper analysis of your financial statements, assets, and market position. For transactional purposes like selling a business or raising capital, we recommend consulting with a professional valuation expert.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question w-full flex justify-between items-center text-left" aria-expanded="false">
+                        <span class="text-lg font-semibold text-gray-800">Why is my valuation a range and not a single number?</span>
+                        <span class="faq-icon-wrapper flex-shrink-0 ml-4">
+                             <svg class="faq-icon h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-answer overflow-hidden max-h-0">
+                        <p class="text-gray-600">Business valuation is not an exact science. The final price a business sells for can be influenced by many factors, including the negotiation process, the buyer's strategic goals, and the overall economic climate. Presenting the valuation as a range acknowledges these variables and provides a more realistic picture of the potential market value.</p>
+                    </div>
+                </div>
+                 <div class="faq-item">
+                    <button class="faq-question w-full flex justify-between items-center text-left" aria-expanded="false">
+                        <span class="text-lg font-semibold text-gray-800">What is the difference between SDE and EBITDA?</span>
+                        <span class="faq-icon-wrapper flex-shrink-0 ml-4">
+                             <svg class="faq-icon h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-answer overflow-hidden max-h-0">
+                        <p class="text-gray-600">The choice depends on your business size and structure. Seller's Discretionary Earnings (SDE) is typically used for smaller, owner-operated businesses where the owner's salary is a significant portion of the profit. EBITDA is the standard for larger, more mature companies that have a professional management structure in place and would need to pay a market-rate salary to a CEO or general manager regardless of who owns the company.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question w-full flex justify-between items-center text-left" aria-expanded="false">
+                       <span class="text-lg font-semibold text-gray-800">Why are there three different valuation methods (Basic, Intermediate, Advanced)?</span>
+                       <span class="faq-icon-wrapper flex-shrink-0 ml-4">
+                             <svg class="faq-icon h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-answer overflow-hidden max-h-0">
+                        <p class="text-gray-600">Businesses at different stages of growth are valued differently. The Basic (SDE) method is best for owner-operated businesses. The Intermediate (EBITDA) method is for more mature, professionally managed companies. The Advanced (DCF) method is a forward-looking approach used by financial analysts to value a business based on its future cash flow potential.</p>
+                    </div>
+                </div>
+                <div class="faq-item">
+                    <button class="faq-question w-full flex justify-between items-center text-left" aria-expanded="false">
+                        <span class="text-lg font-semibold text-gray-800">What is an "industry multiple" and where does it come from?</span>
+                        <span class="faq-icon-wrapper flex-shrink-0 ml-4">
+                             <svg class="faq-icon h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                            </svg>
+                        </span>
+                    </button>
+                    <div class="faq-answer overflow-hidden max-h-0">
+                        <p class="text-gray-600">An industry multiple is a market benchmark that reflects what similar businesses in your sector have recently sold for, relative to their earnings. These multiples are derived from data on thousands of private and public company transactions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <footer class="text-center mt-16 text-sm text-gray-500">
+            <p>&copy; 2024 Razorpay. All Rights Reserved. This calculator is for informational purposes only.</p>
+        </footer>
+
+    </div>
+    
+    <!-- Download Modal -->
+    <div id="download-modal" class="hidden fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+        <div class="bg-white rounded-lg shadow-xl p-8 text-center max-w-sm w-full">
+            <div class="spinner mb-4"></div>
+            <h3 class="text-lg font-semibold text-gray-800">Generating Your Report</h3>
+            <p id="download-status-text" class="text-sm text-gray-600 mt-2">Initializing...</p>
+        </div>
+    </div>
+
+
+    <script type="module" src="./index.tsx"></script>
+<script type="module" src="/index.tsx"></script>
+</body>
+</html>
